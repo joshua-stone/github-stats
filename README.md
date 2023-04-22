@@ -14,8 +14,8 @@ A YAML dict is used to represent one owner to any number of repos:
 
 ```
 $ mkdir repos
-$ echo "flathub:" > flathub.yml
-$ flatpak remote-ls --app --system --columns=application flathub | uniq | while read LINE; do echo "- $LINE"; done >> flathub-apps.yml
+$ echo "flathub:" > repos/flathub.yml
+$ flatpak remote-ls --app --system --columns=application flathub | uniq | while read LINE; do echo "- $LINE"; done >> repos/flathub-apps.yml
 ```
 
 ## Setting up a personal access token
