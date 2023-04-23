@@ -86,7 +86,7 @@ flathub:
 - com.alovoa.alovoa-electron
 - com.amazon.Workspaces
 - com.anydesk.Anydesk
-- com.arteeh.Flasher
+# - com.arteeh.Flasher
 - com.atlauncher.ATLauncher
 - com.authy.Authy
 - com.avocode.Avocode
@@ -275,7 +275,7 @@ flathub:
 - com.github.gijsgoudzwaard.image-optimizer
 - com.github.git_cola.git-cola
 - com.github.gmg137.netease-cloud-music-gtk
-- com.github.gpuvis.Gpuvis
+# - com.github.gpuvis.Gpuvis
 - com.github.gyunaev.spivak
 - com.github.hluk.copyq
 - com.github.hopsan.Hopsan
@@ -694,7 +694,7 @@ flathub:
 - dev.Cogitri.Health
 - dev.alextren.Spot
 - dev.ares.ares
-- dev.atoft.Reactions
+# - dev.atoft.Reactions
 - dev.bambosh.UnofficialHomestuckCollection
 - dev.boxi.Boxi
 - dev.bsnes.bsnes
@@ -989,7 +989,7 @@ flathub:
 - io.github.orontee.Argos
 - io.github.paledega.alpine-rootfs
 - io.github.parnassius.SysDVR-Qt
-- io.github.pastthepixels.InfiniteShooter
+# - io.github.pastthepixels.InfiniteShooter
 - io.github.paulwedeck.settlers-remake
 - io.github.peazip.PeaZip
 - io.github.philipk.boilr
@@ -1070,9 +1070,9 @@ flathub:
 - io.gitlab.evtest_qt.evtest_qt
 - io.gitlab.floodlight.Presenter
 - io.gitlab.gregorni.ASCIIImages
-- io.gitlab.jazztickets.choria
-- io.gitlab.jazztickets.irrlamb
-- io.gitlab.jazztickets.openflap
+# - io.gitlab.jazztickets.choria
+# - io.gitlab.jazztickets.irrlamb
+# - io.gitlab.jazztickets.openflap
 - io.gitlab.jstest_gtk.jstest_gtk
 - io.gitlab.leesonwai.Sums
 - io.gitlab.leesonwai.Tactics
@@ -1259,7 +1259,7 @@ flathub:
 - net.sourceforge.Hugin
 - net.sourceforge.Kino
 - net.sourceforge.Klavaro
-- net.sourceforge.Lifeograph
+# - net.sourceforge.Lifeograph
 - net.sourceforge.OpenLieroX
 - net.sourceforge.Pdfedit
 - net.sourceforge.QtSpim
@@ -1456,10 +1456,10 @@ flathub:
 - org.freedesktop.GstDebugViewer
 - org.freedesktop.LinuxAudio.BaseExtension
 - org.freedesktop.Piper
-- org.freedesktop.Platform.ClInfo
-- org.freedesktop.Platform.GlxInfo
-- org.freedesktop.Platform.VaInfo
-- org.freedesktop.Platform.VulkanInfo
+# - org.freedesktop.Platform.ClInfo
+# - org.freedesktop.Platform.GlxInfo
+# - org.freedesktop.Platform.VaInfo
+# - org.freedesktop.Platform.VulkanInfo
 - org.freedesktop.Tuhi
 - org.freedesktop.adriconf
 - org.freedesktop.appstream-glib
@@ -1474,9 +1474,9 @@ flathub:
 - org.fritzing.Fritzing
 - org.frozen_bubble.frozen-bubble
 - org.gabmus.gfeeds
-- org.gabmus.giara
+# - org.gabmus.giara
 - org.gabmus.hydrapaper
-- org.gabmus.notorious
+# - org.gabmus.notorious
 - org.gabmus.swatch
 - org.gabmus.unifydmin
 - org.gabmus.whatip
@@ -1844,7 +1844,7 @@ flathub:
 - org.mosh.mosh
 - org.mozilla.Thunderbird
 - org.mozilla.firefox.BaseApp
-- org.mozilla.firefox
+# - org.mozilla.firefox
 - org.mpdevil.mpdevil
 - org.msweet.htmldoc
 - org.munadi.Munadi
@@ -2054,7 +2054,7 @@ flathub:
 - page.codeberg.JakobDev.jdFlatpakSnapshot
 - page.codeberg.foreverxml.Random
 - page.codeberg.papojari.Find_Billy
-- page.codeberg.tpikonen.geobug
+# - page.codeberg.tpikonen.geobug
 - page.codeberg.tpikonen.satellite
 - party.supertux.supertuxparty
 - pl.art.lach.slawek.V2BlankBrowser
