@@ -5,7 +5,8 @@ Extract and process stats of github collaborator stats for a given user or organ
 ## Basic usage
 
 ```
-$ ./github-repo-stats.py --dest repos repos/flathub-apps.yml
+$ ./github-repo-stats.py download repos/flathub-apps.yml --directory repos/
+$ ./github-repo-stats.py generate repos/flathub-apps.yml --directory repos/ --outfile results/flathub-apps-stats.csv
 ```
 
 ## Generating input data
