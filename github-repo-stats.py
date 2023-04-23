@@ -24,7 +24,49 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def download_data(config, directory, token, wait):
+def parse_args():
+    parser = argparse.ArgumentParser(description='Process github contributor stats',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    subparsers = parser.add_subparsers(title='commands', dest='command',
+                                       help='Download Github repo data')
+    download_parser = subparsers.add_parser(name='download', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    download_parser.add_argument('input_file', metavar='INPUT_FILE', type=str,
+                        help='File containing repos under a user or organization')
+    download_parser.add_argument('-d', '--directory', metavar='DEST', type=str, default=os.getcwd(), required=False,
+                        help='Destination directory for dumping repo data files')
+    download_parser.add_argument('-t', '--token', metavar='TOKEN', type=str, required=False,
+                        help='Sets API token, otherwise read from GITHUB_API_TOKEN environment variable')
+    download_parser.add_argument('-w', '--wait', metavar='WAIT', type=float, default=3, required=False,
+                                 help='Duration between API call retries')
+
+    generate_parser = subparsers.add_parser(name='generate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    generate_parser.add_argument('input_file', metavar='INPUT_FILE', type=str,
+                        help='File containing repos under a user or organization')
+    generate_parser.add_argument('-d', '--directory', metavar='DEST', type=str, default=os.getcwd(), required=False,
+                        help='Source directory for reading repo data files')
+    generate_parser.add_argument('-o', '--outfile', metavar='OUTPUT', type=str, required=False,
+                                 help='Output file')
+
+    return parser.parse_args()
+
+
+def download(args):
+    input_file = args.input_file
+    directory = args.directory
+    wait = args.wait
+
+    if args.token: 
+        token = args.token
+    elif 'GITHUB_API_TOKEN' in os.environ:
+        token = os.environ['GITHUB_API_TOKEN']
+    else:
+        print('Must pass token from --token option or GITHUB_API_TOKEN environment variable. Exiting.')
+        sys.exit(1)
+
+    with open(input_file, 'r') as infile:
+        config = yaml.safe_load(infile)
+
     headers = {
         'Accept': 'application/vnd.github+json',
         'Authorization': f'Bearer {token}',
@@ -52,17 +94,29 @@ def download_data(config, directory, token, wait):
                 outfile.write(req.text)
 
 
-def generate(config, directory, outfile):
+def generate(args):
+    input_file = args.input_file
+    directory = args.directory
+    outfile = args.outfile
+
+    with open(input_file, 'r') as infile:
+        config = yaml.safe_load(infile)
+
     repo_stats = {}
 
     for owner, repos in config.items():
         for repo in repos:
             infile = Path(directory) / owner / f'{repo}.json'
+     
+            if not infile.exists() or not infile.is_file():
+                eprint(f'Warning: File \'{infile}\' is does not exist')
+                continue
+
             with open(infile, 'r') as infile:
                 dat = json.loads(infile.read())
 
             if dat == error_message:
-                eprint(f'Warning: File \'{file}\' is invalid')
+                eprint(f'Warning: File \'{infile}\' is invalid')
                 continue
 
             #res = [_ for _ in dat]
@@ -75,19 +129,18 @@ def generate(config, directory, outfile):
                     added += week['a']
                     deleted += week['d']
 
-                if name not in repo_stats:
+                if name in repo_stats:
+                    repo_stats[name]['commits'] += commits
+                    repo_stats[name]['added'] += added
+                    repo_stats[name]['deleted'] += deleted
+                    repo_stats[name]['repos'] += 1
+                else:
                     repo_stats[name] = {
                         'commits': commits,
                         'added': added,
                         'deleted': deleted,
                         'repos': 1
                     }
-                else:
-                    repo_stats[name]['commits'] += commits
-                    repo_stats[name]['added'] += added
-                    repo_stats[name]['deleted'] += deleted
-                    repo_stats[name]['repos'] += 1
-
     
     output = ''
     output += 'Contributor,Commits,Added,Deleted,Repos\n'
@@ -103,47 +156,12 @@ def generate(config, directory, outfile):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Process github contributor stats',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    subparsers = parser.add_subparsers(title='commands', dest='command',
-                                       help='Download Github repo data')
-    download_parser = subparsers.add_parser(name='download', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    download_parser.add_argument('input_file', metavar='INPUT_FILE', type=str,
-                        help='File containing repos under a user or organization')
-    download_parser.add_argument('-d', '--directory', metavar='DEST', type=str, default=os.getcwd(), required=False,
-                        help='Destination directory for dumping repo data files')
-    download_parser.add_argument('-t', '--token', metavar='TOKEN', type=str, required=False,
-                        help='Sets API token, otherwise read from GITHUB_API_TOKEN environment variable')
-    download_parser.add_argument('-w', '--wait', metavar='WAIT', type=float, default=3, required=False,
-                                 help='Duration between API call retries')
-
-    generate_parser = subparsers.add_parser(name='generate', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    generate_parser.add_argument('input_file', metavar='INPUT_FILE', type=str,
-                        help='File containing repos under a user or organization')
-    generate_parser.add_argument('-d', '--directory', metavar='DEST', type=str, default=os.getcwd(), required=False,
-                        help='Source directory for reading repo data files')
-    generate_parser.add_argument('-o', '--outfile', metavar='OUTPUT', type=str, required=False,
-                                 help='Output file')
-
-    args = parser.parse_args()
-
-    with open(args.input_file, 'r') as infile:
-        config = yaml.safe_load(infile)
+    args = parse_args()
 
     if args.command == 'download':
-        if args.token:
-            token = args.token
-        elif 'GITHUB_API_TOKEN' in os.environ:
-            token = os.environ['GITHUB_API_TOKEN']
-        else:
-            print('Must pass token from --token option or GITHUB_API_TOKEN environment variable. Exiting.')
-            sys.exit(1)
-
-        download(config, args.directory, token, args.wait)
-
+        download(args)
     elif args.command == 'generate':
-        generate(config, args.directory, args.outfile)
+        generate(args)
     else:
         print(f'Invalid command \'{args.command}\'. Exiting.')
         sys.exit(1)
