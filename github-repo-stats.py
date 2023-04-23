@@ -47,6 +47,10 @@ def parse_args():
                         help='Source directory for reading repo data files')
     generate_parser.add_argument('-o', '--outfile', metavar='OUTPUT', type=str, required=False,
                                  help='Output file')
+    generate_parser.add_argument('-s', '--sort-by', metavar='SORTTBY', type=str, required=False,
+                                 choices=['commits', 'added', 'deleted', 'repos'], default='commits',
+                                 help='Select field to sort results by')
+    generate_parser.add_argument('-r', '--reverse', action='store_false')
 
     return parser.parse_args()
 
@@ -98,6 +102,8 @@ def generate(args):
     input_file = args.input_file
     directory = args.directory
     outfile = args.outfile
+    field = args.sort_by
+    reverse = args.reverse
 
     with open(input_file, 'r') as infile:
         config = yaml.safe_load(infile)
@@ -144,7 +150,7 @@ def generate(args):
     
     output = ''
     output += 'Contributor,Commits,Added,Deleted,Repos\n'
-    for entry in sorted(repo_stats.items(), key=lambda item: item[1]['commits'], reverse=True):
+    for entry in sorted(repo_stats.items(), key=lambda item: item[1][field], reverse=reverse):
         author, stats = entry
         output += f"{author},{stats['commits']},{stats['added']},{stats['deleted']},{stats['repos']}\n"
 
