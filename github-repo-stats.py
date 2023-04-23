@@ -24,12 +24,41 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def parse_args():
+def request_headers(token):
+    return {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': f'Bearer {token}',
+        'X-GitHub-Api-Version': '2022-11-28'
+    }
+
+
+def get_api_token(api_token, api_token_env_var='GITHUB_API_TOKEN'):
+    if api_token:
+        token = api_token
+    elif api_token_env_var in os.environ:
+        token = os.environ[api_token_env_var]
+    else:
+        print(f'Must pass token from --token option or {api_token_env_var} environment variable. Exiting.')
+        sys.exit(1)
+
+    return token
+
+
+def command_parser():
     parser = argparse.ArgumentParser(description='Process github contributor stats',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     subparsers = parser.add_subparsers(title='commands', dest='command',
                                        help='Download Github repo data')
+
+    fetch_parser = subparsers.add_parser(name='fetch-repo-list', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    fetch_parser.add_argument('owner', metavar='OWNER', type=str,
+                              help='Name of user or organization')
+    fetch_parser.add_argument('-t', '--token', metavar='TOKEN', type=str, required=False,
+                              help='Sets API token, otherwise read from GITHUB_API_TOKEN environment variable')
+    fetch_parser.add_argument('-o', '--outfile', metavar='OUTPUT', type=str, required=False,
+                                 help='Output file')
+
     download_parser = subparsers.add_parser(name='download', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     download_parser.add_argument('input_file', metavar='INPUT_FILE', type=str,
                         help='File containing repos under a user or organization')
@@ -52,7 +81,39 @@ def parse_args():
                                  help='Select field to sort results by')
     generate_parser.add_argument('-r', '--reverse', action='store_false')
 
-    return parser.parse_args()
+    return parser
+
+def fetch_repo_list(args):
+    owner = args.owner
+    token = get_api_token(args.token)
+    outfile = args.outfile
+
+    page_number = 1
+    repos = set()
+
+    url = f'https://api.github.com/orgs/{owner}/repos'
+    while True:
+        params= {
+            'per_page': 100,
+            'sort': 'full_name',
+            'page': page_number
+        }
+        req = requests.get(url, headers=request_headers(token), params=params)
+        if req.text not in bad_responses:
+            page_number += 1
+            for repo in [_ for _ in req.json()]:
+                repos.add(repo['name'])
+            print('.', end='', flush=True)
+        else:
+            break
+
+    output = yaml.safe_dump({owner: sorted(repos)})
+
+    if outfile:
+        with open(outfile, 'w') as f:
+            f.write(output)
+    else:
+        print(output)
 
 
 def download(args):
@@ -60,22 +121,10 @@ def download(args):
     directory = args.directory
     wait = args.wait
 
-    if args.token: 
-        token = args.token
-    elif 'GITHUB_API_TOKEN' in os.environ:
-        token = os.environ['GITHUB_API_TOKEN']
-    else:
-        print('Must pass token from --token option or GITHUB_API_TOKEN environment variable. Exiting.')
-        sys.exit(1)
+    token = get_api_token(args.token)
 
     with open(input_file, 'r') as infile:
         config = yaml.safe_load(infile)
-
-    headers = {
-        'Accept': 'application/vnd.github+json',
-        'Authorization': f'Bearer {token}',
-        'X-GitHub-Api-Version': '2022-11-28'
-    }
 
     for owner, repos in config.items():
         for repo in repos:
@@ -84,12 +133,12 @@ def download(args):
             url = f'https://api.github.com/repos/{owner}/{repo}/stats/contributors'
 
             while True:
-                req = requests.get(url, headers=headers)
+                req = requests.get(url, headers=request_headers(token))
                 if req.text not in bad_responses:
                     print('.. done')
                     break
                 else:
-                    print('.', end='')
+                    print('.', end='', flush=True)
                     time.sleep(wait)
 
             dest_dir = Path(directory) / owner
@@ -161,16 +210,21 @@ def generate(args):
         print(output)
 
 
-def main():
-    args = parse_args()
+subcommands = {
+    'fetch-repo-list': fetch_repo_list,
+    'download': download,
+    'generate': generate
+}
 
-    if args.command == 'download':
-        download(args)
-    elif args.command == 'generate':
-        generate(args)
+
+def main():
+    parser = command_parser()
+    args = parser.parse_args()
+
+    if args.command in subcommands:
+        subcommands[args.command](args)
     else:
-        print(f'Invalid command \'{args.command}\'. Exiting.')
-        sys.exit(1)
+        parser.print_help()
 
  
 if __name__ == '__main__':

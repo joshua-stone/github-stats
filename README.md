@@ -11,10 +11,17 @@ $ ./github-repo-stats.py generate repos/flathub-apps.yml --directory repos/ --ou
 
 ## Generating input data
 
-A YAML dict is used to represent one owner to any number of repos:
+A YAML file is used to represent one owner to any number of repos:
 
 ```
-$ mkdir repos
+$ mkdir repos/
+$ ./github-repo-stats.py fetch-repo-list flathub --outfile repos/flathub.yml
+```
+
+Or for a more specific listing:
+
+```
+$ mkdir repos/
 $ echo "flathub:" > repos/flathub-apps.yml
 $ flatpak remote-ls --app --system --columns=application flathub | uniq | while read LINE; do echo "- $LINE"; done >> repos/flathub-apps.yml
 ```
