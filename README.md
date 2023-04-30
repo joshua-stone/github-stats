@@ -1,6 +1,6 @@
-# github-collaborator-stats
+# github-stats
 
-Extract and process stats of github collaborator stats for a given user or organization
+Download and process stats of github stats for a given user or organization
 
 ## Basic usage
 
